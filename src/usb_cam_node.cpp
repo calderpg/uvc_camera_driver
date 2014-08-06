@@ -67,7 +67,7 @@ public:
       node_("~")
   {
     image_transport::ImageTransport it(node_);
-    image_pub_ = it.advertiseCamera("image_raw", 1);
+    image_pub_ = it.advertiseCamera("image", 1);
 
     node_.param("video_device", video_device_name_, std::string("/dev/video0"));
     node_.param("io_method", io_method_name_, std::string("mmap")); // possible values: mmap, read, userptr
@@ -78,49 +78,109 @@ public:
 
     {
       XmlRpc::XmlRpcValue double_list;
-      info_.height = image_height_;
-      info_.width = image_width_;
+      int camera_info_width, camera_info_height;
+      node_.param("calibrated_width", camera_info_width, image_width_);
+      node_.param("calibrated_height", camera_info_height, image_height_);
+      info_.width = camera_info_width;
+      info_.height = camera_info_height;
 
-      node_.param("camera_frame_id", img_.header.frame_id, std::string("head_camera"));
+      node_.param("camera_frame_id", img_.header.frame_id, std::string("uvc_camera"));
       info_.header.frame_id = img_.header.frame_id;
 
+      ROS_DEBUG("Attempting to load distortion model type");
+      node_.param("distortion_model", info_.distortion_model, std::string("plumb_bob"));
+
+      ROS_DEBUG("Attempting to load K parameters");
       node_.getParam("K", double_list);
-      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
-          (double_list.size() == 9)) {
-        for (int i=0; i<9; i++) {
-          ROS_ASSERT(double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-          info_.K[i] = double_list[i];
-        }
+      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) && (double_list.size() == 9))
+      {
+          for (int i=0; i<9; i++)
+          {
+              if (double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble)
+              {
+                  info_.K[i] = double_list[i];
+              }
+              else
+              {
+                  ROS_FATAL("K parameter value is not an XmlRpc::XmlRpcValue::TypeDouble");
+                  exit(-1);
+              }
+          }
+          ROS_DEBUG("Loaded K parameters");
+      }
+      else
+      {
+          ROS_WARN("No/unable to load K parameters");
       }
 
+      ROS_DEBUG("Attempting to load D parameters");
       node_.getParam("D", double_list);
-
-      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray)) {
-        info_.D.resize(double_list.size());
-        for (int i=0; i<double_list.size(); i++) {
-          ROS_ASSERT(double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-          info_.D[i] = double_list[i];
-        }
+      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray))
+      {
+          info_.D.resize(double_list.size());
+          for (int i=0; i<double_list.size(); i++)
+          {
+              if (double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble)
+              {
+                  info_.D[i] = double_list[i];
+              }
+              else
+              {
+                  ROS_FATAL("D parameter value is not an XmlRpc::XmlRpcValue::TypeDouble");
+                  exit(-1);
+              }
+          }
+          ROS_DEBUG("Loaded %d D parameters", (int)info_.D.size());
+      }
+      else
+      {
+          ROS_WARN("No/unable to load D parameters");
       }
 
+      ROS_DEBUG("Attempting to load R parameters");
       node_.getParam("R", double_list);
-
-      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
-          (double_list.size() == 9)) {
-        for (int i=0; i<9; i++) {
-          ROS_ASSERT(double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-          info_.R[i] = double_list[i];
-        }
+      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) && (double_list.size() == 9))
+      {
+          for (int i=0; i<9; i++)
+          {
+              if (double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble)
+              {
+                  info_.R[i] = double_list[i];
+              }
+              else
+              {
+                  ROS_FATAL("R parameter value is not an XmlRpc::XmlRpcValue::TypeDouble");
+                  exit(-1);
+              }
+          }
+          ROS_DEBUG("Loaded R parameters");
+      }
+      else
+      {
+          ROS_WARN("No/unable to load R parameters");
       }
 
+      ROS_DEBUG("Attempting to load P parameters");
       node_.getParam("P", double_list);
-
-      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) &&
-          (double_list.size() == 12)) {
-        for (int i=0; i<12; i++) {
-          ROS_ASSERT(double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble);
-          info_.P[i] = double_list[i];
-        }
+      if ((double_list.getType() == XmlRpc::XmlRpcValue::TypeArray) && (double_list.size() == 12))
+      {
+          for (int i=0; i<12; i++)
+          {
+              if (double_list[0].getType() == XmlRpc::XmlRpcValue::TypeDouble)
+              {
+                  info_.P[i] = double_list[i];
+              }
+              else
+              {
+                  ROS_FATAL("P parameter value is not an XmlRpc::XmlRpcValue::TypeDouble");
+                  exit(-1);
+              }
+          }
+          ROS_DEBUG("Loaded P parameters");
+      }
+      else
+      {
+          ROS_WARN("No/unable to load P parameters");
       }
     }
 
