@@ -56,6 +56,7 @@ extern "C" {
 #include <linux/videodev2.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libavutil/mem.h>
 }
 
 #define CLEAR(x) memset (&(x), 0, sizeof (x))
