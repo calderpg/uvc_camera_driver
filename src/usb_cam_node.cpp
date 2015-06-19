@@ -258,8 +258,9 @@ public:
       {
         count_++;
         ros::Time now_time = ros::Time::now();
-        if (now_time > next_time_) {
-          std::cout << count_ << " frames/sec at " << now_time << std::endl;
+        if (now_time > next_time_)
+        {
+          ROS_DEBUG("%d frames/sec at %f", count_, now_time.toSec());
           count_ = 0;
           next_time_ = next_time_ + ros::Duration(1,0);
         }
