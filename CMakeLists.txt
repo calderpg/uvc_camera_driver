@@ -20,9 +20,9 @@ find_package(catkin REQUIRED COMPONENTS image_transport roscpp sensor_msgs std_m
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
   INCLUDE_DIRS include
-#  LIBRARIES uvc_camera_driver
+  LIBRARIES ${PROJECT_NAME}
   CATKIN_DEPENDS image_transport roscpp sensor_msgs std_msgs message_runtime
-  DEPENDS system_lib
+  DEPENDS system_lib avcodec swscale
 )
 
 ###########
@@ -37,12 +37,14 @@ include_directories(include
 )
 
 ## Declare a cpp library
-add_library(usb_cam src/usb_cam.cpp)
-target_link_libraries(usb_cam ${catkin_LIBRARIES} avcodec swscale)
+add_library(${PROJECT_NAME} include/${PROJECT_NAME}/usb_cam.h src/${PROJECT_NAME}/usb_cam.cpp)
+target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} avcodec swscale)
+add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
 
 ## Declare a cpp executable
-add_executable(usb_cam_node src/usb_cam_node.cpp)
-target_link_libraries(usb_cam_node ${catkin_LIBRARIES} usb_cam avcodec swscale)
+add_executable(${PROJECT_NAME}_node src/usb_cam_node.cpp)
+target_link_libraries(${PROJECT_NAME}_node ${PROJECT_NAME} ${catkin_LIBRARIES})
+add_dependencies(${PROJECT_NAME}_node ${catkin_EXPORTED_TARGETS})
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
