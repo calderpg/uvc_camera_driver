@@ -50,7 +50,7 @@
 
 #include <asm/types.h>          /* for videodev2.h */
 
-#include "uvc_camera_driver/usb_cam.h"
+#include <uvc_camera_driver/usb_cam.h>
 
 extern "C" {
 #include <linux/videodev2.h>
@@ -297,8 +297,8 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   //Load avdictionary
   av_dict_set(&avdictionary, "b", "2.5M", 0);
 
-  avframe_camera = avcodec_alloc_frame();
-  avframe_rgb = avcodec_alloc_frame();
+  avframe_camera = av_frame_alloc(); // avcodec_alloc_frame();
+  avframe_rgb = av_frame_alloc(); // avcodec_alloc_frame();
 
   avpicture_alloc((AVPicture *)avframe_rgb, PIX_FMT_RGB24, image_width, image_height);
 
@@ -335,7 +335,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
   int decoded_len;
   AVPacket avpkt;
   av_init_packet(&avpkt);
-  
+
   avpkt.size = len;
   avpkt.data = (unsigned char*)MJPEG;
   decoded_len = avcodec_decode_video2(avcodec_context, avframe_camera, &got_picture, &avpkt);
@@ -363,7 +363,7 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 
   video_sws = sws_getContext( xsize, ysize, avcodec_context->pix_fmt, xsize, ysize, PIX_FMT_RGB24, SWS_BILINEAR, NULL, NULL, NULL);
   sws_scale(video_sws, avframe_camera->data, avframe_camera->linesize, 0, ysize, avframe_rgb->data, avframe_rgb->linesize );
-  sws_freeContext(video_sws);  
+  sws_freeContext(video_sws);
 
   int size = avpicture_layout((AVPicture *) avframe_rgb, PIX_FMT_RGB24, xsize, ysize, (uint8_t *)RGB, avframe_rgb_size);
   if (size != avframe_rgb_size) {
@@ -875,17 +875,25 @@ void usb_cam_camera_shutdown(void)
   uninit_device();
   close_device();
 
-  if (avcodec_context) {
+  if (avcodec_context)
+  {
     avcodec_close(avcodec_context);
-    av_free(avcodec_context);
+    avcodec_free_context(&avcodec_context);
+    //av_free(avcodec_context);
     avcodec_context = NULL;
   }
   if (avframe_camera)
-    av_free(avframe_camera);
-  avframe_camera = NULL;
+  {
+    av_frame_free(&avframe_camera);
+    avframe_camera = NULL;
+    //av_free(avframe_camera);
+  }
   if (avframe_rgb)
-    av_free(avframe_rgb);
-  avframe_rgb = NULL;
+  {
+    av_frame_free(&avframe_rgb);
+    //av_free(avframe_rgb);
+    avframe_rgb = NULL;
+  }
 }
 
 void usb_cam_camera_grab_image(usb_cam_camera_image_t *image)

@@ -38,8 +38,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/fill_image.h>
-#include "uvc_camera_driver/usb_cam.h"
-#include <self_test/self_test.h>
+#include <uvc_camera_driver/usb_cam.h>
 #include <image_transport/image_transport.h>
 
 class UsbCamNode
@@ -268,7 +267,6 @@ public:
         ROS_ERROR("couldn't take image.");
         usleep(1000000);
       }
-//      self_test_.checkTest();
     }
     return true;
   }
