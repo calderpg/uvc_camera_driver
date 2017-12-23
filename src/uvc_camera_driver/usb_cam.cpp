@@ -284,7 +284,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
   //avcodec_init();
   avcodec_register_all();
 
-  avcodec = avcodec_find_decoder(CODEC_ID_MJPEG);
+  avcodec = avcodec_find_decoder(AV_CODEC_ID_MJPEG);
   if (!avcodec)
   {
     fprintf(stderr,"Could not find MJPEG decoder\n");
@@ -302,7 +302,7 @@ static int init_mjpeg_decoder(int image_width, int image_height)
 
   avpicture_alloc((AVPicture *)avframe_rgb, PIX_FMT_RGB24, image_width, image_height);
 
-  avcodec_context->codec_id = CODEC_ID_MJPEG;
+  avcodec_context->codec_id = AV_CODEC_ID_MJPEG;
   avcodec_context->width = image_width;
   avcodec_context->height = image_height;
 
