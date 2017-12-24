@@ -375,11 +375,17 @@ mjpeg2rgb(char *MJPEG, int len, char *RGB, int NumPixels)
 static void process_image(const void * src, int len, usb_cam_camera_image_t *dest)
 {
   if(pixelformat==V4L2_PIX_FMT_YUYV)
+  {
     yuyv2rgb((char*)src, dest->image, dest->width*dest->height);
+  }
   else if(pixelformat==V4L2_PIX_FMT_UYVY)
+  {
     uyvy2rgb((char*)src, dest->image, dest->width*dest->height);
+  }
   else if(pixelformat==V4L2_PIX_FMT_MJPEG)
+  {
     mjpeg2rgb((char*)src, len, dest->image, dest->width*dest->height);
+  }
 }
 
 static int read_frame(usb_cam_camera_image_t *image)
